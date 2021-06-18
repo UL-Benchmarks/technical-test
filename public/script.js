@@ -1,36 +1,40 @@
+const grpahicDiv = document.querySelector(".graphicsdiv");
+
 document.addEventListener("DOMContentLoaded", theDomHasLoaded, false);
 window.addEventListener("load", pageFullyLoaded, false);
 
 $.getJSON("./test.json", function (data) {
-    loadResultDataIn(data);
+  loadResultDataIn(data);
 });
 
 function theDomHasLoaded(e) {
-    // when DOM is fully loaded
+  // when DOM is fully loaded
 }
 
 function pageFullyLoaded(e) {
-    // when page is fully loaded
+  // when page is fully loaded
 }
 
 function loadResultDataIn(result) {
-    loadOverallScore(result.results[0], result.systemInfo);
-    loadComponentScores(result.results[0].scores.componentScores);
-    loadDetailedScores(result.results[0].scores.componentScores);
-    loadSystemInfo(result.systemInfo);
+  loadOverallScore(result.results[0], result.systemInfo);
+  loadComponentScores(result.results[0].scores.componentScores);
+  loadDetailedScores(result.results[0].scores.componentScores);
+  loadSystemInfo(result.systemInfo);
 
-
-    $('#TEST_NAME').html("Time Spy Extreme");
+  $("#TEST_NAME").html("Time Spy Extreme");
 }
 
 function loadOverallScore(result, systemInfo) {
-    $('.procyon-overall-score h2').html('Time Spy Extreme' + ' score');
-    $('.procyon-overall-score .main-score h3').html(result.scores.overallScore.uiValue);
+  $(".procyon-overall-score .m1").html("Time Spy Extreme" + " score");
 
-    let gpuString = '';
-    systemInfo.gpu.forEach(gpu => {
-        gpuString +=
-            `
+  getProgress(Number(result.scores.overallScore.score));
+  // $(".procyon-overall-score .main-score h3").html(
+  //   result.scores.overallScore.score
+  // );
+
+  let gpuString = "";
+  systemInfo.gpu.forEach((gpu) => {
+    gpuString += `
             <div class="flex-col w25">
                 <p class="pl0">GPU:</p>
             </div>
@@ -38,13 +42,12 @@ function loadOverallScore(result, systemInfo) {
                 <p>${gpu.name}</p>
             </div>
             `;
-    });
-    $('.gpu-summary').html(gpuString);
+  });
+  $(".gpu-summary").html(gpuString);
 
-    let cpuString = '';
-    systemInfo.cpu.forEach(cpu => {
-        cpuString +=
-            `
+  let cpuString = "";
+  systemInfo.cpu.forEach((cpu) => {
+    cpuString += `
             <div class="flex-col w25">
                 <p class="pl0">CPU:</p>
             </div>
@@ -52,31 +55,33 @@ function loadOverallScore(result, systemInfo) {
                 <p>${cpu.name}</p>
             </div>
             `;
-    });
-    $('.cpu-summary').html(cpuString);
+  });
+  $(".cpu-summary").html(cpuString);
 }
 
 function loadComponentScores(componentScores) {
-    let componentScoreString = '';
-    componentScores.forEach(score => {
-        componentScoreString +=
-            `
+  let componentScoreString = "";
+  componentScores.forEach((score) => {
+    componentScoreString += `
             <div class="w100 procyon-result-box flex-col-stretch p1">
                  <h3 class="no-border pb05">${score.baseType}</h3>
                  <h2 class="center no-border pt05">${score.uiValue}</h2>
             </div>
             `;
-    });
-    $('#COMPONENT_SCORE').html(componentScoreString);
+  });
+  $("#COMPONENT_SCORE").html(componentScoreString);
 }
 
 function loadDetailedScores(componentScores) {
-    let componentScoreString = '';
-    componentScores.forEach(score => {
-        let subScoreString = '';
-        score.subScores.forEach( subScore => {
-            subScoreString +=
-                `
+  let componentScoreString = "";
+  let subScoreArray = [];
+  let subScoreCategories = [];
+  componentScores.forEach((score) => {
+    subScoreArray.push(score.score);
+    subScoreCategories.push(score.baseType);
+    let subScoreString = "";
+    score.subScores.forEach((subScore) => {
+      subScoreString += `
                 <div class="w100">
                     <div class="flex-row w100 procyon-deepsubscore pb05">
                         <div class="w60 pr05">
@@ -88,10 +93,11 @@ function loadDetailedScores(componentScores) {
                     </div>
                 </div>
                 `;
-        });
+      subScoreArray.push(subScore.uiValue);
+      subScoreCategories.push(subScore.baseType);
+    });
 
-        componentScoreString +=
-            `
+    componentScoreString += `
             <div class="flex-col-start w33 p05 plr1">
                 <div class="flex-row procyon-subscore pb05">
                     <div class="w60 pr05">
@@ -104,15 +110,18 @@ function loadDetailedScores(componentScores) {
                 ${subScoreString}
             </div>
             `;
-    });
-    $('.procyon-component-score').html(componentScoreString);
+  });
+  $(".procyon-component-score").html(componentScoreString);
+
+  //chart for rendering info
+
+  getChart(subScoreArray, subScoreCategories);
 }
 
 function loadSystemInfo(systemInfo) {
-    let cpuString = `<h3 class="border-bottom pb05"><i class="icon icon-cpu fm-icon mr05"></i>CPU</h3>`;
-    systemInfo.cpu.forEach( cpu => {
-        cpuString +=
-            `
+  let cpuString = `<h3 class="border-bottom pb05"><i class="icon icon-cpu fm-icon mr05"></i>CPU</h3>`;
+  systemInfo.cpu.forEach((cpu) => {
+    cpuString += `
             <div each={opts.run.systemInfo.cpu} class="mb05">
                     <dl class="result-systeminfo-list-details clearfix">
 
@@ -144,25 +153,23 @@ function loadSystemInfo(systemInfo) {
                       <dd>${cpu.virtualTechnologyCapable}</dd>
                     </dl>
                   </div>
-            `
-    });
-    $('#SYSTEMINFO_CPU').html(cpuString);
+            `;
+  });
+  $("#SYSTEMINFO_CPU").html(cpuString);
 
-    let gpuString = `<h3 class="border-bottom pb05"><i class="icon icon-gpu mr05"></i>GPU</h3>`;
-    systemInfo.gpu.forEach( gpu => {
-        let displayString = '';
-        gpu.displays.forEach( (display, i) => {
-            displayString +=
-                `
+  let gpuString = `<h3 class="border-bottom pb05"><i class="icon icon-gpu mr05"></i>GPU</h3>`;
+  systemInfo.gpu.forEach((gpu) => {
+    let displayString = "";
+    gpu.displays.forEach((display, i) => {
+      displayString += `
                 <dl class="result-systeminfo-list-details clearfix">
-                        <dt>Display ${i+1}</dt>
+                        <dt>Display ${i + 1}</dt>
                         <dd>${display.deviceName} (${display.resolution})</dd>
                 </dl>
                 `;
-        });
+    });
 
-        gpuString +=
-            `
+    gpuString += `
             <div class="mb05">
                     <dl class="result-systeminfo-list-details clearfix">
                       <dt>GPU</dt>
@@ -201,16 +208,15 @@ function loadSystemInfo(systemInfo) {
                     </div>
                   </div>
             `;
-    });
-    $('#SYSTEMINFO_GPU').html(gpuString);
+  });
+  $("#SYSTEMINFO_GPU").html(gpuString);
 
-    let storageString = `<h3 class="border-bottom pb05"><i class="icon icon-download fm-icon mr05"></i>Storage</h3>`;
-    systemInfo.storage.forEach( (storage, i) => {
-        storageString +=
-            `
+  let storageString = `<h3 class="border-bottom pb05"><i class="icon icon-download fm-icon mr05"></i>Storage</h3>`;
+  systemInfo.storage.forEach((storage, i) => {
+    storageString += `
             <div class="systeminfo-storage-list">
                       <dl class="result-systeminfo-list-details clearfix">
-                        <dt>Drive ${i+1}</dt>
+                        <dt>Drive ${i + 1}</dt>
                         <dd class="pr15">${storage.driveName}</dd>
                       </dl>
                       <div class="storage-info">
@@ -225,6 +231,93 @@ function loadSystemInfo(systemInfo) {
                       </div>
                   </div>
             `;
-    });
-    $('#SYSTEMINFO_STORAGE').html(storageString);
+  });
+  $("#SYSTEMINFO_STORAGE").html(storageString);
+}
+
+//function to create chart of Graphical info
+function getChart(data, Categories) {
+  var options = {
+    chart: {
+      height: 280,
+      type: "area",
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    series: [
+      {
+        name: "Score",
+        data: data,
+      },
+    ],
+    fill: {
+      type: "gradient",
+      gradient: {
+        shadeIntensity: 1,
+        opacityFrom: 0.7,
+        opacityTo: 0.9,
+        stops: [0, 90, 100],
+      },
+    },
+    xaxis: {
+      categories: Categories,
+    },
+  };
+
+  var chart = new ApexCharts(grpahicDiv, options);
+  chart.render();
+}
+
+//function to create visual for the tie spy extreme score
+function getProgress(progress) {
+  var options = {
+    chart: {
+      height: 280,
+      type: "radialBar",
+    },
+    series: [progress],
+    colors: ["#20E647"],
+    plotOptions: {
+      radialBar: {
+        startAngle: -90,
+        endAngle: 90,
+        track: {
+          background: "#333",
+          startAngle: -90,
+          endAngle: 90,
+        },
+        dataLabels: {
+          name: {
+            show: false,
+          },
+          value: {
+            fontSize: "30px",
+            show: true,
+            formatter: function (val) {
+              return val;
+            },
+          },
+        },
+      },
+    },
+    fill: {
+      type: "gradient",
+      gradient: {
+        shade: "dark",
+        type: "horizontal",
+        gradientToColors: ["#87D4F9"],
+        stops: [0, 100],
+      },
+    },
+    stroke: {
+      lineCap: "butt",
+    },
+    labels: ["Per 10000 Score"],
+  };
+
+  new ApexCharts(
+    document.querySelector(".procyon-overall-score .main-score h2"),
+    options
+  ).render();
 }
