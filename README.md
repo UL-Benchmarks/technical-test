@@ -12,3 +12,4 @@ There is an example image in the root of the project. You can ignore the missing
 2. run 'npm start'
 3. use one of the addresses generated
 
+# testing-assignment
